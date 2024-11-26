@@ -1,9 +1,11 @@
 import socket
 import math
 
+from time import sleep
 from threading import Thread
 
 class Server_Socket:
+    threads: dict
     
     def __init__(self, IP: str, PORT: int) -> None:
         self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -19,23 +21,29 @@ class Server_Socket:
                 client_socket, client_address = self.server_socket.accept()
                 
                 print(f"Conexão estabelecida com {client_address}")
-                Thread(target=self.process_data, args=(client_socket,))
+                t:Thread = Thread(target=self.process_data, args=(client_socket,)).start()
+                self.threads[t.getName()] = t
 
 
             except:
                 print("\n\nErro!\n\n")
 
     def process_data(self, client: socket.socket):
-        try:
-            messenge = client.recv(1024)
-            messenge = messenge.decode('UTF-8')
-
-            result = self.calculator(messenge)
-
-            client.send(result)
+        lock = 10
         
-        except:
-            print("\nTimeout!\n")
+        while lock:
+            try:
+                messenge = client.recv(1024)
+                messenge = messenge.decode('UTF-8')
+
+                result = self.calculator(messenge)
+
+                client.send(result.encode('UTF-8'))
+            
+            except:
+                # print("\nTimeout!\n")
+                sleep(5)
+                # lock -= 1
 
     def calculator(self, expression):
         expression:list = expression.split()
@@ -45,14 +53,24 @@ class Server_Socket:
         if comand == 'soma':
             result = sum(expression)
             print(result)
-            return f"A soma eh: {result}"
+            return str(f"A soma eh: {result}")
 
         else:
-            return f"O comando {comand} nao eh reconhecido"
+            return str(f"O comando {comand} nao eh reconhecido")
+
+    def close_server(self):
+        for t in self.threads:
+            if self.threads[t].is_alive():
+                self.threads[t].join()
+
+    def kill(self):
+        for t in self.threads:
+            self.threads[t].terminate()
 
 
 if __name__ == "__main__":
-    ip = '10.10.1.61'
+    # ip = '10.10.1.61'
+    ip = '192.168.1.47'
     port = 8080
 
     server = Server_Socket(ip, port)
