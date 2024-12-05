@@ -10,17 +10,25 @@ typedef struct node{
 
 
 class ListAdj{
-    int n;
-    int m;
-    int neighbours;
-    node list[];
+    private:
+        int n;
+        int m;
+        int neighbours;
+        node list[];
 
-    public: ListAdj() = default;
+    public:
+
+        ListAdj(int n, int m){
+            this->n = n;
+            this->m = m;
+
+             
+        }
 
     int* neighbours(int index){
-        
+        int ;
 
-        node vertex = (*this).list[index]; 
+        node vertex = list[index]; 
         
         while (vertex.next != NULL){
             vertex.value;
