@@ -6,6 +6,11 @@ class Client:
         self.socket_client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socket_client.connect((IP,PORT))
 
+    
+
 
 if __name__ == "__main__":
-    c = Client(123, 8080)
+    IP = '192.168.1.47'
+    PORT = 8080
+
+    c = Client(IP, PORT)

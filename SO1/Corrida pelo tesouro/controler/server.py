@@ -32,3 +32,11 @@ class Server:
     def listening(self):
         # Passa a esperar novas conexões e atribui uma thread a essa conexão
         pass
+
+
+if __name__ == "__main__":
+    IP = '192.168.1.47'
+    PORT = 8080
+
+    s = Server(IP, PORT)
+    s.start()
