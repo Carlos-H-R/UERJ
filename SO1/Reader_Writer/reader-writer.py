@@ -73,15 +73,18 @@ if __name__ == "__main__":
     writing = BoundedSemaphore(1)
     mutex = BoundedSemaphore(1)
     readcount = 0
+
+    writers = dict()
+    readers = dict()
     
     message = ''
   
-    w1 = Thread(target=Writer, args=(writing, )).start()
-    w2 = Thread(target=Writer, args=(writing, )).start()
+    writers['w1'] = Thread(target=Writer, args=(writing, )).start()
+    writers['w2'] = Thread(target=Writer, args=(writing, )).start()
     
-    r1 = Thread(target=Reader, args=(writing, mutex, )).start()
-    r2 = Thread(target=Reader, args=(writing, mutex, )).start()
-    r3 = Thread(target=Reader, args=(writing, mutex, )).start()
-    r4 = Thread(target=Reader, args=(writing, mutex, )).start()
+    readers['r1'] = Thread(target=Reader, args=(writing, mutex, )).start()
+    readers['r2'] = Thread(target=Reader, args=(writing, mutex, )).start()
+    readers['r3'] = Thread(target=Reader, args=(writing, mutex, )).start()
+    readers['r4'] = Thread(target=Reader, args=(writing, mutex, )).start()
 
     

@@ -3,7 +3,7 @@ import socket
 from threading import Thread
 
 
-class Server:
+class ServerSocket:
     def __init__(self, IP, PORT) -> None:
         self.ip = IP
         self.port = PORT
@@ -18,6 +18,10 @@ class Server:
         # Delega funcoes
 
         self.socket_server.bind((self.ip, self.port))
+
+    def save(self):
+        # armazena o estado do jogo
+        pass
 
     def stop(self):
         # Finaliza as Threads 
@@ -38,5 +42,5 @@ if __name__ == "__main__":
     IP = '192.168.1.47'
     PORT = 8080
 
-    s = Server(IP, PORT)
+    s = ServerSocket(IP, PORT)
     s.start()
