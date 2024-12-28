@@ -18,6 +18,7 @@ class ServerSocket:
         # Delega funcoes
 
         self.socket_server.bind((self.ip, self.port))
+        self.listening()
 
     def save(self):
         # armazena o estado do jogo
@@ -35,7 +36,12 @@ class ServerSocket:
 
     def listening(self):
         # Passa a esperar novas conexões e atribui uma thread a essa conexão
-        pass
+        self.socket_server.listen(10)
+        client, address = self.socket_server.accept()
+        print(address)
+
+        m = client.recv(1024).decode()
+        print(m)
 
 
 if __name__ == "__main__":
