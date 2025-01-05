@@ -1,23 +1,25 @@
-import keyboard
-
-from time import sleep
 from random import randint
+from Player import Player
 from Treasure import Treasure
 
 
 class Map():
-    # implementa o mapa do jogo 
-    # registra a posição dos objetos 
-    # registra a posicao dos jogadores
-    # registra os acessos as salas
+    """
+    # Classe Map
+
+    -> Implementa o mapa do jogo 
+    -> Registra a posição dos objetos 
+    -> Registra a posicao dos jogadores
+    """
 
     def __init__(self, lines=25, columns=25, number_of_treasures=15, number_of_rooms=0) -> None:
         self.__size__ = (lines,columns)
-        self.__rooms__ = number_of_rooms
-        self.__id_track__ = 1
-        self.__position__ = dict()
-        self.__tresures__ = dict()
+        self.__n_rooms__ = number_of_rooms
         self.__n_treasures__ = number_of_treasures
+
+        self.__id_track__ = 1
+        self.__players__ = dict()
+        self.__tresures__ = dict()
 
         self.createMap()
         self.distribute_tresures()
@@ -25,8 +27,9 @@ class Map():
 
 
     def start(self) -> None:
-        self.__position__['test'] = (1,2)
-        position = self.__position__['test']
+        self.__players__['test'] = Player()
+        self.__players__['test'].updatePosition(self.__size__, 1, 2)
+        position = self.__players__['test'].getPosition()
         self.__map__[position[0]][position[1]] = 'P'
 
         self.showMap()
@@ -45,34 +48,52 @@ class Map():
             column = randint(0,self.__size__[1] - 1)
             line = randint(0,self.__size__[0] - 1)
             
-            if not self.check_treasure((line,column)) and  not (self.__position__ == (line,column)):
-                self.__tresures__[self.__id_track__] = ((line,column), Treasure(value, self.__id_track__))
+            if not self.check_treasure((line,column)):
+                self.__tresures__[self.__id_track__] = Treasure(value, (line,column))
                 self.__id_track__ += 1
                 self.__map__[line][column] = 'X'
 
-    def check_treasure(self, position) -> bool:
+    def check_treasure(self, position: tuple) -> bool:
+        """ Retorna True se ha tesouro na posicao informada """
+
         for i in self.__tresures__.values():
-            if position == i[0]:
+            if position == i.getPosition() and not i.is_colected():
                 return True
             
         return False
+    
+    def get_treasure(self, position) -> int:
+        """ Retorna o ID do tesouro naquela posição """
+
+        for i in self.__tresures__.keys():
+            if position == self.__tresures__[i].getPosition:
+                return i
+            
+        return 0
 
     def update_position(self, id: str, dx: int, dy: int) -> None:
-        y,x = self.__position__[id]
-        self.__map__[y][x] = ' '
+        y,x = self.__players__[id].getPosition()
 
-        y = (y+dy)%self.__size__[0]
-        x = (x+dx)%self.__size__[1]
+        yy = (y+dy)%self.__size__[0]
+        xx = (x+dx)%self.__size__[1]
 
-        self.__position__[id] = (y,x)
-        self.__map__[y][x] = 'P'
+        if self.check_treasure((yy,xx)):
+            treasure_id = self.get_treasure((yy,xx))
+            treasure_value = self.__tresures__[treasure_id].getValue()
 
-        self.check_treasure(self.__position__)
+            self.__tresures__[treasure_id].__colect__()
+            
+            self.__players__[id].updatePoints(treasure_value)
+            self.__players__[id].updatePosition(self.__size__, yy, xx)
+            self.__map__[y][x] = ' '
+            self.__map__[yy][xx] = 'P'
+
+        else:
+            self.__players__[id].updatePosition(self.__size__, yy, xx)
+            self.__map__[y][x] = ' '
+            self.__map__[yy][xx] = 'P'
 
         self.showMap()
-
-    def interact(self):
-        pass
 
     def move(self, id, input) -> None:
         if input == 'up':
@@ -94,23 +115,29 @@ class Map():
             self.move('test', key.lower())
         
     def showMap(self) -> str:
+        # top_size = (2 * self.__size__[1]) + 1
+        # top = ' ' * top_size
         formatedMap = str()
 
-        for line in self.__map__:
-            formatedMap += str(line) + '\n'
+        # formatedMap += '\033[4m' + top + '\n'
 
+        for line in self.__map__:
+            # formatedMap += '|' + '|'.join(line) + '|' + '\n'
+            formatedMap += ' '.join(line) + '\n'
+
+        # formatedMap += '\033[0m'
+        
         print(formatedMap)
         return formatedMap
     
 
 class TreasureRoom(Map):
-    # extende o mapa para implementar a sala
-    # pode ser usada para a sala do tesouro 
+    # Extende a class Map para implementar a sala
+    # usada como a sala do tesouro 
     # sala vazia nao pode ser acessada
     # registra posicao dos recursos 
     # geracao aleatoria de tesouros
-    # jogador tem 10 segundos para coletar os tesouros
-    # se atingido o limite de tempo o jogador é removido da sala
+    # acesso e tempo disponível é controlado esxternamente
     # semaforo para controlar o acesso de jogadores
 
     # Semaforo binario garantindo q apenas um jogador por vez acesse a sala
@@ -119,6 +146,9 @@ class TreasureRoom(Map):
     __empty__ = False
 
     def start(self) -> None:
+        pass
+
+    def enter(self, player_id):
         pass
 
     def is_empty(self) -> bool:
@@ -131,21 +161,31 @@ class TreasureRoom(Map):
             if i[1].is_colected():
                 counter += 1
 
-        if counter == self.__n_treasures__:
+        if counter >= self.__n_treasures__:
             self.__empty__ = True
+
+    def set_entry_position(self, position) -> None:
+        self.__entry_position__ = position
+
+    def get_entry_position(self) -> tuple:
+        return self.__entry_position__
 
 
 class Main_Map(Map):
-    # extende a classe mapa para implementar o mapa principal
-    # região crítica
-    # concorrecias gerenciada por semáforos
-    # o mapa eh dividido em celulas
-    # acessos simultaneos a recursos devem ser sincronizados
-    # alteração do estado do mapa deve ser uma operação atomica
+    """
+    #Classe Main_Map
+    
+    Extende a classe mapa para implementar o mapa principal
+    
+    É uma egião crítica e as concorrências são tratadas pelo servidor
+    
+    O mapa é dividido em celulas nas quais são distribuidos os recursos
+    Acessos simultaneos a recursos são tratados 
+    Alteração do estado do mapa eh uma operação atomica e controlada por semaforos
 
-    # movimentacao dos jogadores eh controlada por semaforos
-        # cada celula do mapa pode ter um semaforo individual
-        # ou o mapa inteiro possui um semaforo
+    A movimentacao dos jogadores é controlada por semaforos
+        -> O mapa inteiro possui um semaforo que permite
+    """
 
     # apenas um jogador pode coletar tesouro por vez
     # a posicao deve ser atualizada de forma consistente
@@ -153,24 +193,113 @@ class Main_Map(Map):
     def start(self) -> None:
         self.distribute_treasure_rooms()
 
+        # wait for players
+        self.__players__['test'] = Player()
+        self.__players__['test'].updatePosition(0, self.__size__, 1, 2)
+        position = self.__players__['test'].getPosition()
+        self.__map__[position[0]][position[1]] = 'P'
+
+        self.showMap()
+        self.update()
+
     def distribute_treasure_rooms(self) -> None:
         self.treasure_rooms = dict()
+        id_track = 1
 
-        for i in range(self.__rooms__):
-            y = randint(0,self.__size__[0])
-            x = randint(0,self.__size__[1])
-            position = (x,y)
+        positions = []
 
-            if not self.check_treasure(position):
-                self.treasure_rooms['room_'+str(id)] = (position, TreasureRoom())
+        for i in range(self.__n_rooms__):
+            y = randint(0,self.__size__[0] - 1)
+            x = randint(0,self.__size__[1] - 1)
+            positions.append((x,y))
 
-            # else:
-            #     y = randint(0,self.__size__[0])
-            #     x = randint(0,self.__size__[1])
-            #     position = (x,y)
+        while positions.__len__():
+            position = positions.pop(0)
+
+            if not self.check_treasure(position) and not self.check_room(position):
+                self.treasure_rooms['room_'+str(id_track)] = TreasureRoom(lines=15, columns=15, number_of_rooms=0, number_of_treasures=15)
+                self.treasure_rooms['room_'+str(id_track)].set_entry_position(position)
+                self.__map__[position[1]][position[0]] = 'S'
+
+                id_track += 1
+
+            else:
+                y = randint(0, self.__size__[0])
+                x = randint(0, self.__size__[1])
+                positions.append((x,y))
+
+    def check_room(self, position) -> bool:
+        """ Retorna True quando há Sala de tesouro na posição informada"""
+
+        for room in self.treasure_rooms.values():
+            if room[0] == position:
+                return True
+            
+        return False
+    
+    def check_player(self, id, position) -> bool:
+        """ Retorna True quando há um jogador com id diferente na posição informada """
+
+        for key in self.__players__.keys():
+            player = self.__players__[key]
+            if id != key and position == player.getPosition() and not player.getRoom():
+                return True
+            
+        return False
+
+    def new_player(self, name: str):
+        self.__players__[name] = Player()
+
+        x = randint(0,self.__size__[1] - 1)
+        y = randint(0,self.__size__[0] - 1)
+
+        position = [(y,x)]
+
+        while position.__len__():
+            p = position.pop(0)
+
+            if not self.check_treasure(p) and not self.check_room(p) and not self.check_player('', p):
+                self.__players__[name].updatePosition(0, self.__size__, p[0], p[1])
+
+            else:
+                x = randint(0,self.__size__[1] - 1)
+                y = randint(0,self.__size__[0] - 1)
+
+                position.append((y,x))
+
+    def update_position(self, id: str, dx: int, dy: int) -> None:
+        y,x = self.__players__[id].getPosition()
+
+        yy = (y+dy)%self.__size__[0]
+        xx = (x+dx)%self.__size__[1]
+
+        if self.check_treasure((yy,xx)):
+            treasure_id = self.get_treasure((yy,xx))
+            treasure_value = self.__tresures__[treasure_id].getValue()
+
+            self.__tresures__[treasure_id].__colect__()
+            
+            self.__players__[id].updatePoints(treasure_value)
+            self.__players__[id].updatePosition(self.__size__, yy, xx)
+            self.__map__[y][x] = ' '
+            self.__map__[yy][xx] = 'P'
+
+        elif self.check_room((yy,xx)):
+            # enter room
+            pass
+
+        elif self.check_player(id, (yy,xx)):
+            pass
+
+        else:
+            self.__players__[id].updatePosition(self.__size__, yy, xx)
+            self.__map__[y][x] = ' '
+            self.__map__[yy][xx] = 'P'
 
 
 
 if __name__ == "__main__":
-    m = Map(lines=10, columns=10, number_of_treasures=3)
+    # m = Map(lines=10, columns=10, number_of_treasures=3)
     # print(m.showMap())
+
+    main = Main_Map(lines=15, columns=15, number_of_treasures=10, number_of_rooms=9)

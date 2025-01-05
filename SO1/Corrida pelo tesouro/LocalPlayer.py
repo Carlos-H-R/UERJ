@@ -9,20 +9,24 @@ from controler.client import ClientSocket
 class LocalPlayer(Player):
     def start(self) -> None:
         try:
-            ip = str(input('Insira o IP: '))
-            port = int(input('Insira a porta: '))
+            # ip = str(input('Insira o IP: '))
+            # port = int(input('Insira a porta: '))
+
+            ip = '192.168.1.47'
+            port = 8080
 
             self.__clientConection__ = ClientSocket(ip, port)
             self.__active__ = BoundedSemaphore()
 
         except ConnectionRefusedError:
             print("\nServidor fechado! ")
+            quit()
 
     def update_info(self):
         # recebe os pacotes do servidor e atualiza as informações do cliente
         self.__clientConection__.receive()
 
-    def listenig_keyboard(self):
+    def listening_keyboard(self):
         # observa os eventos de teclado e processa a entrada
         while self.__active__._value:
             keyboard.on_press(self.move)
@@ -47,8 +51,15 @@ class LocalPlayer(Player):
         elif keyboard.key_to_scan_codes('d') == key or keyboard.key_to_scan_codes('D') == key:
             message = 'right'
 
-        self.__clientConection__.send(message.encode())
+        else:
+            message = ''
+
+        self.__clientConection__.send(message)
+        print('sent')
 
 
 if __name__ == "__main__":
-    l = LocalPlayer().start()
+    l = LocalPlayer()
+
+    l.start()
+    l.listening_keyboard()

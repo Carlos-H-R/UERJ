@@ -41,6 +41,7 @@ class ClientSocket:
         # metodo que envia para o servidor os comandos processados pelo cliente
         self.package = message.encode('utf-8')
         self.__socket_client__.send(self.package)
+        print('sent')
 
     def receive(self) -> str:
         # metodo que retorna dados decodificado no buffer 
