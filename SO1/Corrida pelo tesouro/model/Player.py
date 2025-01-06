@@ -14,15 +14,21 @@ class Player:
     def getPosition(self) -> list:
         return self.__position__
     
+    def setRoom(self, room) -> None:
+        self.__room__ = room
+    
+    def setPoints(self, points: int) -> None:
+        self.__points__ = points
         
     def updatePoints(self, points):
         # atualiza a contagem de pontos
-        self.__points__ = points
+        self.__points__ += points
 
-    def updatePosition(self, room, size, line, column):
+    def updatePosition(self, room, position):
         # armazena a posicao do jogador
+        line = position[0]
+        column = position[1]
         self.__room__ = room
-        self.map_size = size
         self.__position__ = [line,column]
 
 

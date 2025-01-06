@@ -21,6 +21,8 @@ class Client_Socket:
         print(f"\nResposta >> {answer} \n")
 
     def end_connection(self):
+        end = b'kill'
+        self.socket_client.send(end)
         self.socket_client.close()
 
 

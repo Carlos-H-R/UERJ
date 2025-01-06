@@ -1,6 +1,6 @@
 from random import randint
-from Player import Player
-from Treasure import Treasure
+from model.Player import Player
+from model.Treasure import Treasure
 
 
 class Map():
@@ -84,12 +84,12 @@ class Map():
             self.__tresures__[treasure_id].__colect__()
             
             self.__players__[id].updatePoints(treasure_value)
-            self.__players__[id].updatePosition(self.__size__, yy, xx)
+            self.__players__[id].updatePosition(0, (yy,xx))
             self.__map__[y][x] = ' '
             self.__map__[yy][xx] = 'P'
 
         else:
-            self.__players__[id].updatePosition(self.__size__, yy, xx)
+            self.__players__[id].updatePosition(0, (yy,xx))
             self.__map__[y][x] = ' '
             self.__map__[yy][xx] = 'P'
 
@@ -127,7 +127,7 @@ class Map():
 
         # formatedMap += '\033[0m'
         
-        print(formatedMap)
+        # print(formatedMap)
         return formatedMap
     
 
@@ -149,7 +149,7 @@ class TreasureRoom(Map):
         pass
 
     def enter(self, player_id):
-        pass
+        self.__players__[player_id] = Player()
 
     def is_empty(self) -> bool:
         # checa se a sala esta vazia
@@ -173,9 +173,9 @@ class TreasureRoom(Map):
 
 class Main_Map(Map):
     """
-    #Classe Main_Map
+    # Classe Main_Map
     
-    Extende a classe mapa para implementar o mapa principal
+    ### Extende a classe mapa para implementar o mapa principal
     
     É uma egião crítica e as concorrências são tratadas pelo servidor
     
@@ -193,14 +193,14 @@ class Main_Map(Map):
     def start(self) -> None:
         self.distribute_treasure_rooms()
 
-        # wait for players
-        self.__players__['test'] = Player()
-        self.__players__['test'].updatePosition(0, self.__size__, 1, 2)
-        position = self.__players__['test'].getPosition()
-        self.__map__[position[0]][position[1]] = 'P'
+        # # wait for players
+        # self.__players__['test'] = Player()
+        # self.__players__['test'].updatePosition(0, self.__size__, 1, 2)
+        # position = self.__players__['test'].getPosition()
+        # self.__map__[position[0]][position[1]] = 'P'
 
-        self.showMap()
-        self.update()
+        # self.showMap()
+        # self.update()
 
     def distribute_treasure_rooms(self) -> None:
         self.treasure_rooms = dict()
@@ -217,8 +217,8 @@ class Main_Map(Map):
             position = positions.pop(0)
 
             if not self.check_treasure(position) and not self.check_room(position):
-                self.treasure_rooms['room_'+str(id_track)] = TreasureRoom(lines=15, columns=15, number_of_rooms=0, number_of_treasures=15)
-                self.treasure_rooms['room_'+str(id_track)].set_entry_position(position)
+                self.treasure_rooms[id_track] = TreasureRoom(lines=15, columns=15, number_of_rooms=0, number_of_treasures=15)
+                self.treasure_rooms[id_track].set_entry_position(position)
                 self.__map__[position[1]][position[0]] = 'S'
 
                 id_track += 1
@@ -232,7 +232,7 @@ class Main_Map(Map):
         """ Retorna True quando há Sala de tesouro na posição informada"""
 
         for room in self.treasure_rooms.values():
-            if room[0] == position:
+            if position == room.get_entry_position():
                 return True
             
         return False
@@ -259,7 +259,8 @@ class Main_Map(Map):
             p = position.pop(0)
 
             if not self.check_treasure(p) and not self.check_room(p) and not self.check_player('', p):
-                self.__players__[name].updatePosition(0, self.__size__, p[0], p[1])
+                self.__players__[name].updatePosition(0, (p[0],p[1]))
+                self.__map__[p[1]][p[0]] = 'P'
 
             else:
                 x = randint(0,self.__size__[1] - 1)
@@ -280,7 +281,7 @@ class Main_Map(Map):
             self.__tresures__[treasure_id].__colect__()
             
             self.__players__[id].updatePoints(treasure_value)
-            self.__players__[id].updatePosition(self.__size__, yy, xx)
+            self.__players__[id].updatePosition(0,(yy,xx))
             self.__map__[y][x] = ' '
             self.__map__[yy][xx] = 'P'
 
@@ -292,7 +293,7 @@ class Main_Map(Map):
             pass
 
         else:
-            self.__players__[id].updatePosition(self.__size__, yy, xx)
+            self.__players__[id].updatePosition(0, (yy,xx))
             self.__map__[y][x] = ' '
             self.__map__[yy][xx] = 'P'
 

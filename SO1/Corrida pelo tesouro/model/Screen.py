@@ -14,11 +14,11 @@ class Screen:
         sleep(timeout)
         system('cls')
 
-    def output(self, content):
+    def output(self, content: str):
         try:
             # Formata as informacoes e exibe na saida padrao
             self.clear()
-            self.output_size = stdout.write(str(content))
+            self.output_size = stdout.write(content)
             stdout.flush()
             sleep(0.02)
 
