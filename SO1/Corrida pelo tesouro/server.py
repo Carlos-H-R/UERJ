@@ -1,7 +1,8 @@
 import socket
 
 from time import sleep
-from threading import Thread, BoundedSemaphore
+from queue import Queue
+from threading import Thread, BoundedSemaphore, Semaphore
 from model.Maps import Main_Map
 
 class GameServer:
@@ -20,7 +21,7 @@ class GameServer:
         
         self.active = True
         self.max_players = 1
-        self.package_buffer = []
+        self.package_buffer = Queue()
         self.players = {}
         self.threads = {}
         self.connections = {}
@@ -28,6 +29,9 @@ class GameServer:
         self.update_lock = BoundedSemaphore(1)
 
     def start(self, max_players):
+        """
+        Inicia o servidor e gerencia threads de comunicação.
+        """
         self.max_players = max_players
         self.map = Main_Map(10, 10, 10, 7)
         
@@ -51,13 +55,13 @@ class GameServer:
                 self.players[address] = {"status": True}
                 self.connections[address] = client
 
-                thread = Thread(target=self.handle_connection, args=(address,))
+                thread = Thread(target=self.connection, args=(address,))
                 self.threads[address] = thread
                 thread.start()
             except Exception as error:
                 print(f"Erro ao aceitar conexão: {error}")
 
-    def handle_connection(self, address):
+    def connection(self, address):
         """
         Gerencia comunicação com um jogador.
         """
@@ -69,7 +73,7 @@ class GameServer:
                 package = client.recv(1024)
                 if package:
                     command = package.decode("utf-8")
-                    self.package_buffer.append((address, command))
+                    self.package_buffer.put((address, command))
             except Exception as error:
                 print(f"Erro na comunicação com {address}: {error}")
                 self.players[address]["status"] = False
@@ -85,47 +89,48 @@ class GameServer:
         Atualiza o estado do jogo com base nos comandos recebidos.
         """
         while self.active:
-            self.update_lock.acquire()
             try:
                 if self.package_buffer:
-                    id, command = self.package_buffer.pop(0)
+                    id, command = self.package_buffer.get(timeout=0.5)
                     player_room = self.map.__players__[id].getRoom()
 
+                    self..acquire()
                     if player_room == 0:
                         self.map.move(id, command)
                     else:
                         self.map.treasure_rooms[player_room].move(id, command)
-
+                    self.update_lock.release()
                     sleep(0.1)
 
-            except IndexError:
-                pass
+            except KeyboardInterrupt:
+                self.active = False
             except Exception as error:
-                print(f"Erro ao atualizar estado: {error}")
-            finally:
-                self.update_lock.release()
+                # print(f"Erro ao atualizar estado: {error}")
                 sleep(0.1)
+            finally:
+                sleep(0.1)
+            
 
     def send_updated_state(self):
         """
         Envia o estado atualizado do jogo para todos os jogadores.
         """
         while self.active:
-            self.update_lock.acquire()
             try:
                 for id, client in self.connections.items():
+                    self.update_lock.acquire()
                     if id in self.map.__players__:
                         player = self.map.__players__[id]
                         map_data = self.map.showMap() if player.getRoom() == 0 else self.map.treasure_rooms[player.getRoom()].showMap()
                     
                         client.send(map_data.encode("utf-8"))
+                    self.update_lock.release()
+                    sleep(0.5)
                 
-                sleep(0.1)
                         
             except Exception as error:
                 print(f"Erro ao enviar estado: {error}")
             finally:
-                self.update_lock.release()
                 sleep(0.1)
 
     def quit_game(self):

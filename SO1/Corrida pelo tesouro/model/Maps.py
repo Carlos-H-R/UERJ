@@ -63,11 +63,11 @@ class Map():
         return False
     
     def get_treasure(self, position) -> int:
-        """ Retorna o ID do tesouro naquela posição """
+        """ Retorna o Valor do tesouro naquela posição """
 
         for i in self.__tresures__.keys():
-            if position == self.__tresures__[i].getPosition:
-                return i
+            if position == self.__tresures__[i].getPosition():
+                return self.__tresures__[i].getValue()
             
         return 0
 
@@ -78,11 +78,8 @@ class Map():
         xx = (x+dx)%self.__size__[1]
 
         if self.check_treasure((yy,xx)):
-            treasure_id = self.get_treasure((yy,xx))
-            treasure_value = self.__tresures__[treasure_id].getValue()
+            treasure_value = self.get_treasure((yy,xx))
 
-            self.__tresures__[treasure_id].__colect__()
-            
             self.__players__[id].updatePoints(treasure_value)
             self.__players__[id].updatePosition(0, (yy,xx))
             self.__map__[y][x] = ' '
@@ -169,6 +166,27 @@ class TreasureRoom(Map):
 
     def get_entry_position(self) -> tuple:
         return self.__entry_position__
+    
+    def new_player(self, name: str):
+        self.__players__[name] = Player()
+
+        x = randint(0,self.__size__[1] - 1)
+        y = randint(0,self.__size__[0] - 1)
+
+        position = [(y,x)]
+
+        while position.__len__():
+            p = position.pop(0)
+
+            if not self.check_treasure(p) and not self.check_room(p) and not self.check_player('', p):
+                self.__players__[name].updatePosition(0, p)
+                self.__map__[p[0]][p[1]] = 'P'
+
+            else:
+                x = randint(0,self.__size__[1] - 1)
+                y = randint(0,self.__size__[0] - 1)
+
+                position.append((y,x))
 
 
 class Main_Map(Map):
@@ -228,6 +246,15 @@ class Main_Map(Map):
                 x = randint(0, self.__size__[1])
                 positions.append((x,y))
 
+    def get_room(self, position):
+        """ Retorna o id da Sala de tesouro na posição informada """
+        
+        for room in self.treasure_rooms.keys():
+            if position == self.treasure_rooms[room].get_entry_position():
+                return room
+            
+        return 0
+
     def check_room(self, position) -> bool:
         """ Retorna True quando há Sala de tesouro na posição informada"""
 
@@ -259,8 +286,8 @@ class Main_Map(Map):
             p = position.pop(0)
 
             if not self.check_treasure(p) and not self.check_room(p) and not self.check_player('', p):
-                self.__players__[name].updatePosition(0, (p[0],p[1]))
-                self.__map__[p[1]][p[0]] = 'P'
+                self.__players__[name].updatePosition(0, p)
+                self.__map__[p[0]][p[1]] = 'P'
 
             else:
                 x = randint(0,self.__size__[1] - 1)
@@ -275,19 +302,18 @@ class Main_Map(Map):
         xx = (x+dx)%self.__size__[1]
 
         if self.check_treasure((yy,xx)):
-            treasure_id = self.get_treasure((yy,xx))
-            treasure_value = self.__tresures__[treasure_id].getValue()
+            treasure_value = self.get_treasure((yy,xx))
 
-            self.__tresures__[treasure_id].__colect__()
-            
             self.__players__[id].updatePoints(treasure_value)
             self.__players__[id].updatePosition(0,(yy,xx))
             self.__map__[y][x] = ' '
             self.__map__[yy][xx] = 'P'
 
         elif self.check_room((yy,xx)):
-            # enter room
-            pass
+            room = self.get_room((yy,xx))
+            self.__players__[id].updatePosition(room, (0,0))
+
+            self.treasure_rooms[room].new_player(id)
 
         elif self.check_player(id, (yy,xx)):
             pass

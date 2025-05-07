@@ -5,7 +5,6 @@ from time import sleep
 from threading import Thread, Event
 from multiprocessing import Pipe
 from model.Screen import Screen
-from model.Player import Player
 
 class LocalPlayer:
     def __init__(self, ip, port):
@@ -67,7 +66,7 @@ class LocalPlayer:
         """Observa eventos de teclado e processa comandos do jogador."""
         keyboard.on_press(self.handle_key_event)
         while self.active.is_set():
-            sleep(0.4)
+            sleep(1)
 
     def process_messages(self):
         """Processa mensagens recebidas do servidor."""
