@@ -1,13 +1,20 @@
 class math_service:
+    def __init__(self) -> None:
+        self.services = {
+            'add': self.add,
+            'sub': self.sub,
+            'divide': self.divide,
+            'multiply': self.multiply
+        }
     
-    def add(x: int, y: int) -> int:
+    def add(self, x: int, y: int) -> int:
         return x+y
     
-    def sub(x: int, y: int) -> int:
+    def sub(self, x: int, y: int) -> int:
         return x-y
     
-    def divide(x: int, y: int) -> int:
+    def divide(self, x: int, y: int) -> int:
         return x//y
     
-    def multiply(x: int, y: int) -> int:
+    def multiply(self, x: int, y: int) -> int:
         return x*y
