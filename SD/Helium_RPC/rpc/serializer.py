@@ -9,7 +9,7 @@ class serializer:
         return pickle.dumps(object)
 
     def serialize(self, *args) -> bytes:
-        message = tuple(args)
+        message = list(args)
         return pickle.dumps(message)
 
     def unserialize(self, message: bytes):
