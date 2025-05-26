@@ -1,13 +1,8 @@
-from threading import Thread
+import sys
+from pathlib import Path
+sys.path.append(str(Path(__file__).resolve().parent.parent))
 
 from rpc.rpc_server import rpc_server
-from rpc.rpc_binder import binder
 
-
-def proxy_binder():
-    _binder = binder()
-    _binder.start_binder()
-
-
-if __name__ == "__main__":
-    binder = binder()
+rpc_server().online()
+    

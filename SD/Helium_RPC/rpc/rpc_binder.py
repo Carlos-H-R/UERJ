@@ -1,3 +1,8 @@
+import sys
+from pathlib import Path
+sys.path.append(str(Path(__file__).resolve().parent.parent))
+
+
 import socket
 
 from threading import Thread
@@ -58,8 +63,9 @@ class binder:
             except:
                 pass
 
-    def start_binder(self):
+    def start_binder(self) -> None:
         # inicialize the binder
+        self.binder_socket.settimeout(5)
         self.binder_socket.listen(5)
         self.alive = True
 
@@ -75,4 +81,13 @@ class binder:
             except KeyboardInterrupt:
                 self.binder_socket.close()
                 self.alive = False
+
+            except socket.timeout:
+                continue
+
+        print('Binder Offline ... ')
+        self.binder_socket.close()
+
+if __name__ == "__main__":
+    binder().start_binder()
     

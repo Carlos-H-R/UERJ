@@ -20,8 +20,8 @@ class serializer:
     def send_protocol(self, 
                       command: str, 
                       sercive_name: str, 
-                      ip: str = None, 
-                      port: int = None
+                      ip: str|None = None, 
+                      port: str|int|None = None
                       ) -> bytes:
         
         if (ip == None) or (port == None):
@@ -29,7 +29,7 @@ class serializer:
             return pickle.dumps(protocol)
 
         else:
-            protocol = '|'.join([command, sercive_name, ip, port])
+            protocol = '|'.join([command, sercive_name, ip, port]) # type: ignore
             return pickle.dumps(protocol)
 
     def received_protocol(self, b_protocol: bytes) -> list:

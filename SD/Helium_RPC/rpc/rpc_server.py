@@ -65,7 +65,7 @@ class rpc_server:
             service_socket.listen(5)
             
             while True: 
-                service_socket.timeout(5)
+                service_socket.settimeout(5)
                 try:
                     connection, address = service_socket.accept()
                     Thread(target=self.processing, args=(connection, address)).start()
@@ -85,7 +85,6 @@ class rpc_server:
         try:
             # Recebe a requisição do cliente
             request_bytes: bytes = connection.recv(8192) 
-            print(request_bytes)
             if not request_bytes: # Se a conexão foi fechada ou nenhum dado foi recebido
                 print(f"Cliente {address} desconectou ou enviou dados vazios.")
                 connection.close()
