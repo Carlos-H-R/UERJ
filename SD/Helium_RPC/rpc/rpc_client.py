@@ -15,7 +15,7 @@ class rpc_client:
     def connect(self, protocol: bytes, binder_IP: str, binder_PORT: int) -> bool:
         # conect to binder
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as binder_socket:
-            binder_socket.bind(('127.0.0.1',8061))
+            # binder_socket.bind(('127.0.0.1',8061))
             binder_socket.connect((binder_IP, binder_PORT))
             binder_socket.send(protocol)
 
@@ -28,9 +28,8 @@ class rpc_client:
                 return False
 
             else:
-                ip, port = server_address
                 self.client_socket.connect(server_address)
-                print(f"Conectado ao servidor {server_address}")
+                print(f"Conected to server {server_address}")
                 return True
 
     def disconect(self) -> None:
@@ -39,7 +38,7 @@ class rpc_client:
 
     def call(self, method, x, y):
         # send a request and waits for result
-        request = self.serializer.send_protocol('LOOKUP', 'remote_calculator')
+        request = self.serializer.send_protocol('LOOKUP', method)
         if self.connect(request, '127.0.0.1', 8080):
             request = {'function': method,
                        'x': x,
@@ -49,7 +48,7 @@ class rpc_client:
             procedure = self.serializer.serialize_obj(request)
             self.client_socket.send(procedure)
 
-            result = self.client_socket.recv(4096)
+            result = self.client_socket.recv(8192)
             result = self.serializer.unserialize(result)
             print(result)
         

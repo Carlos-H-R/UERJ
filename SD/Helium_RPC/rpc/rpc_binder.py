@@ -1,5 +1,6 @@
 import socket
 
+from threading import Thread
 from rpc.serializer import serializer
 
 
@@ -13,53 +14,63 @@ class binder:
         self.serializer = serializer()
         self.services = dict()
 
-    def start_binder(self):
-        # inicialize the binder
-        self.binder_socket.listen(5)
-        self.alive = True
-
-        print('Binder Online ... \n')
-
-        while self.alive:
+    def binder_handler(self, connection: socket.socket):
+        handling = True
+        while handling:
             try:
-                connection, address = self.binder_socket.accept()
-                print(f"Request received from {address}")
-
                 request_protocol = connection.recv(4096)
                 protocol = self.serializer.received_protocol(request_protocol)
-
+            
                 if protocol[0] == 'REGISTER':
                     service_name: str = protocol[1]
                     ip: str = protocol[2]
-                    port: int = protocol[3]
+                    port: int = int(protocol[3])
 
-                    self.services[service_name] = (ip, int(port))
-                    print(self.services)
+                    self.services[service_name] = (ip, port)
+                    print(service_name, self.services[service_name])
                     reply = self.serializer.serialize_obj('Sucessfully registered!')
 
                     connection.send(reply)
-                    print('New service registered!')
-
+                    print('--> New service registered!')
             
                 elif protocol[0] == 'LOOKUP':
                     service_name = protocol[1]
+                    print(service_name)
 
                     try:
                         service_address = self.services[service_name]
-                        
                         # connection.send(self.serializer.serialize_obj('|'.join(service_address)))
                         connection.send(self.serializer.serialize_obj(service_address))
-
 
                     except KeyError:
                         # serviço não disponivel
                         connection.send(self.serializer.serialize_obj(0))
 
+                    handling = False
+
+                elif protocol[0] == 'END':
+                    connection.close() # Ainda a definir se o socket sera encerrado
+                    handling = False
 
                 else:
                     connection.send(b'Unknown Protocol!')
 
-                connection.close()
+            except:
+                pass
+
+    def start_binder(self):
+        # inicialize the binder
+        self.binder_socket.listen(5)
+        self.alive = True
+
+        print('Binder Online ... ')
+
+        while self.alive:
+            try:
+                connection, address = self.binder_socket.accept()
+                print(f"\nRequest received from {address}")
+
+                Thread(target=self.binder_handler, args=(connection,)).start()
 
             except KeyboardInterrupt:
                 self.binder_socket.close()

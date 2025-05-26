@@ -16,45 +16,55 @@ class rpc_server:
         self.server_socker.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.server_socker.bind((ip,port))
 
+        self.service_provider = dict()
         self.serializer = serializer()
         self.calculator = math_service()
     
     def online(self, binder_ip = '127.0.0.1', binder_port = 8080) -> None:
         # connect the server and register services   
         
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as binder_socket:
-            binder_socket.bind(('127.0.0.1',8071))
-            binder_socket.connect((binder_ip,binder_port))
+        try:    
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as binder_socket:
+                # binder_socket.bind(('127.0.0.1',8071))
+                binder_socket.connect((binder_ip,binder_port))
+                
+                for service in self.calculator.services:
+                    service_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                    service_socket.bind((self.IP,0))
+                    
+                    address = service_socket.getsockname()
+                    
+                    t = Thread(target=self.service, args=(service_socket, )).start()
+                    self.service_provider[service] = t
 
-            request = self.serializer.send_protocol('REGISTER', 'remote_calculator', self.IP, self.PORT.__str__())
+                    request = self.serializer.send_protocol('REGISTER', service, address[0], (address[1]).__str__())
+                    binder_socket.send(request)
 
-            binder_socket.send(request)
-            reply = binder_socket.recv(4096)
-            reply = self.serializer.unserialize(reply)
-            print(reply)
+                    reply = binder_socket.recv(4096)
+                    reply = self.serializer.unserialize(reply)
+                    print(reply)
 
-            binder_socket.close()
+                request = self.serializer.send_protocol('END','END')
+                binder_socket.send(request)
+                binder_socket.close()
 
-        self.queue = Queue()
+            self.queue = Queue()
+            print("\n>> Server Online!\n")
 
-    def running(self) -> None:
-        print("\nServer Online!\n")
-        alive = True
+        except OSError:
+            self.online()
 
-        while alive:
-            if self.queue.empty():
-                try:
-                    self.server_socker.listen(5)
-                    connection, address = self.server_socker.accept()
-                    print(f"New connection {address}")
+    def service(self, service_socket: socket.socket) -> None:
+        try:                 
+                service_socket.listen(5)
 
-                    Thread(target=self.processing, args=(connection, address, ))
+                connetion, address = service_socket.accept()
 
-                except KeyboardInterrupt:
-                    self.queue.put(False)
+                print(f"Service request from {address}")
+                Thread(target=self.processing, args=(connetion, address)).start()
 
-            else:
-                alive = self.queue.get()
+        except:
+            pass
 
     def offline(self) -> None:
         # stop the server
