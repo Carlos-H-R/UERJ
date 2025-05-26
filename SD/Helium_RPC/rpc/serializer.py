@@ -6,7 +6,8 @@ class serializer:
         pass
 
     def serialize_obj(self, object) -> bytes:
-        return pickle.dumps(object)
+        bytes_obj = pickle.dumps(object)
+        return bytes_obj
 
     def serialize(self, *args) -> bytes:
         message = list(args)
