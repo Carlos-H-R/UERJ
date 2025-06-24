@@ -1,0 +1,9 @@
+Decisao de implemetacao (Usar classe x Usar funcao):
+    Um Codigo para cada classe e o Objeto quando instancida a classe eh uma representação da Serie
+
+    Um único codigo agrupando funcoes:  
+        Cada funcao seria o algoritmo para calcular a aproximação da série relacionada
+
+        Funcoes auxiliares em codigo separado
+
+
