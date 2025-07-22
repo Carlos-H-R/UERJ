@@ -1,1 +1,2 @@
-# Repositório de Trabalhos e tarefas do Curso de Ciência da Computação
+# Repositório de Trabalhos e Tarefas
+# Curso de Ciência da Computação
