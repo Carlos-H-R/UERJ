@@ -2,34 +2,36 @@ from math import inf
 from PiGenerator import PiGenerator
 
 
-class Leinbniz(PiGenerator):
+class Nilakantha(PiGenerator):
     evolution = []
 
     def generate(self):
         # execute iteration
+        mean_error = inf
         iteration = 0
         pi = 0
-        mean_error = inf
+        i = 2
 
         while mean_error > self.tol and iteration < self.max_iter:
-            pi += ((-1) ** iteration) / (2 * iteration + 1)
-            partial_pi = 4 * pi
+            pi += 1 / ((i)*(i+1)*(i+2))
+            partial_pi = 3 + (4*pi)
 
-            mean_error = self.mean_error(partial_pi)
             self.evolution.append(partial_pi)
+            mean_error = self.mean_error(partial_pi)
 
             iteration += 1
+            i += 2
 
-        pi *= 4
+        pi = 3 + (4 * pi)
         print(f"Realizadas {iteration} iteracoes")
-        return pi
+        return round(pi, self.truncate)
     
     def plot_aproximation(self):
         pass
 
 
 if __name__ == "__main__":
-    generator = Leinbniz(5, 10000, 1e-6)
+    generator = Nilakantha(6, 1000000, 1e-6)
     pi = generator.generate()
 
     print(pi)

@@ -2,7 +2,7 @@ from math import inf
 from PiGenerator import PiGenerator
 
 
-class Leinbniz(PiGenerator):
+class BBP(PiGenerator):
     evolution = []
 
     def generate(self):
@@ -12,24 +12,24 @@ class Leinbniz(PiGenerator):
         mean_error = inf
 
         while mean_error > self.tol and iteration < self.max_iter:
-            pi += ((-1) ** iteration) / (2 * iteration + 1)
-            partial_pi = 4 * pi
+            coef = 1/(16**iteration)
+            factor = (8*iteration)+1
+            pi += coef*((4/factor)-(2/(factor+3))-(1/(factor+4))-(1/(factor+5)))
 
-            mean_error = self.mean_error(partial_pi)
-            self.evolution.append(partial_pi)
+            mean_error = self.mean_error(pi)
+            self.evolution.append(pi)
 
             iteration += 1
 
-        pi *= 4
         print(f"Realizadas {iteration} iteracoes")
-        return pi
+        return round(pi, self.truncate)
     
     def plot_aproximation(self):
         pass
 
 
 if __name__ == "__main__":
-    generator = Leinbniz(5, 10000, 1e-6)
+    generator = BBP(6, 10000, 1e-9)
     pi = generator.generate()
 
     print(pi)
