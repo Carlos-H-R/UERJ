@@ -1,0 +1,16 @@
+Deve-se produzir os códigos e um relatório
+
+O relatório deve conter:
+    Nome e matr ́ıcula do aluno;
+    • Orienta ̧c ̃oes sobre como construir o execut ́avel e carregar os modelos utilizados;
+    • Quais modelos foram utilizados com sucesso, citando trˆes nomes da lista sugerida e, caso necess ́ario, como foi feita a convers ̃ao de formato;
+    • Demais recursos necess ́arios para a utiliza ̧c ̃ao do programa como outras bibliotecas, arquivos, etc;
+    • Qualquer outra informa ̧c ̃ao que julgue relevante para utiliza ̧c ̃ao de seu programa n ̃ao citada anteriormente.
+
+O código deve ser capaz de:
+    Renderizar uma cena ou um objeto 3D a partir de um arquivo de formato OBJ (e MTL)
+    Usando a biblioteca OpenGL
+    A renderização inicial deve compreender o objeto inteiramente visível.
+    Pode ser utilizado bibliotecas adicionais para carregar texturas
+    Deve ser implementada a rotação do objeto com o mouse.
+    

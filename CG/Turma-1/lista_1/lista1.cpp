@@ -50,16 +50,27 @@ void display() {
 
 
 void reshape(GLint width, GLint height) {
-    glViewport(0, 0, width, height);
-
     glMatrixMode(GL_PROJECTION);
+    GLfloat aspect = GLfloat(width) / GLfloat(height);
     glLoadIdentity();
 
-    gluOrtho2D(0, 2, 0, 2);
-    
-    glMatrixMode(GL_MODELVIEW);
-    glutPostRedisplay();
+    if (width <= height) glOrtho(-2.5, 2.5, -2.5/aspect, 2.5/aspect, -10.0, 10.0);
+    else glOrtho(-2.5*aspect, 2.5*aspect, -2.5, 2.5, -10.0, 10.0);
+
+    gluPerspective (60,aspect, 0.1, 15);
 }
+
+// void reshape(GLint width, GLint height) {
+//     glViewport(0, 0, width, height);
+
+//     glMatrixMode(GL_PROJECTION);
+//     glLoadIdentity();
+
+//     gluOrtho2D(0, 2, 0, 2);
+    
+//     glMatrixMode(GL_MODELVIEW);
+//     glutPostRedisplay();
+// }
 
 
 void sol() {
