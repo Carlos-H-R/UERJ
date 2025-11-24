@@ -7,6 +7,8 @@
 using namespace std;
 
 std::ifstream file("./.src/dragon.obj");
+// std::ifstream file("./.src/dragon.obj");
+// std::ifstream file("./.src/dragon.obj");
 
 int start_x = 0;
 int start_y = 0;
@@ -45,7 +47,16 @@ int main(int argc, char** argv) {
 
 
 void display() {
-    
+    // um desenhar um cubo de teste
+    glBegin(GL_POLYGON);
+        glVertex2d(-1.0, -1.0);
+        glVertex2d(1.0, -1.0);
+        glVertex2d(1.0, 1.0);
+        glVertex2d(-1.0, 1.0);
+    glEnd();
+
+    glFlush();
+    glutSwapBuffers();
 }
 
 void init() {
@@ -108,6 +119,8 @@ void mouse(int button, int state, int x, int y) {
         finish_x = x;
         finish_y = y;
 
+
+
         glutPostRedisplay();
     }
 }
@@ -117,9 +130,19 @@ void render() {
     std::string line;
 
     if (file.is_open()) {
-        glBegin();
+        glBegin(GL_POLYGON);
         while (getline(file, line)) {
+            std::istringstream iss(line); 
 
+            char id;
+            float x, y, z;
+            iss >> id >> x >> y >> z; // Extract 'v' and coordinates
+            std::cout << "Vertex: " << x << ", " << y << ", " << z << std::endl;
+            glVertex3f(x, y, z)
         }
+        glEnd();
+
     }
+
+
 }
