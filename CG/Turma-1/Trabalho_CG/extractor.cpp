@@ -210,7 +210,7 @@ void drawModel() {
     glScalef(scale, scale, scale);
     glTranslatef(-centerX, -centerY, -centerZ);
 
-    for (face:faces) {
+    for (const auto& face : faces) {
         if (face.vertexIndices.empty()) continue; // Ignora faces vazias
 
         glBegin(GL_POLYGON); 
