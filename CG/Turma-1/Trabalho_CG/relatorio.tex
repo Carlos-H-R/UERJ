@@ -1,0 +1,124 @@
+\documentclass[12pt, a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[brazil]{babel}
+\usepackage{geometry}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{hyperref}
+
+% Geometria da página
+\geometry{
+    a4paper,
+    total={170mm,257mm},
+    left=20mm,
+    top=20mm,
+}
+
+% Estilo para blocos de código
+\definecolor{codegray}{rgb}{0.95,0.95,0.95}
+\lstset{
+    backgroundcolor=\color{codegray},
+    basicstyle=\ttfamily\small,
+    breaklines=true,
+    frame=single,
+    rulecolor=\color{black},
+    showstringspaces=false,
+    tabsize=2,
+    captionpos=b,
+    keywordstyle=\color{blue},
+    stringstyle=\color{red},
+    commentstyle=\color{green},
+}
+
+% Informações do Título
+\title{Relatório de Atividade \\ \large Renderizador de Modelos .OBJ}
+\author{
+    Nome do Aluno: \underline{\hspace{5cm}} \\
+    \vspace{5mm} % Espaço entre nome e matrícula
+    Matrícula: \underline{\hspace{5cm}}
+}
+\date{\today}
+
+\begin{document}
+
+% --- Capa ---
+\begin{titlepage}
+    \maketitle
+    \thispagestyle{empty}
+\end{titlepage}
+
+\newpage
+\tableofcontents
+\newpage
+
+\section{Construindo e Utilizando o Programa}
+
+Esta seção detalha os passos necessários para compilar o programa em um ambiente Linux e como utilizá-lo para carregar diferentes modelos 3D.
+
+\subsection{Compilação do Executável}
+
+O programa foi desenvolvido em C++ e utiliza as bibliotecas OpenGL e GLUT para renderização gráfica. Para compilar o código-fonte (`extractor.cpp`) e gerar o arquivo executável, utilize o seguinte comando no terminal:
+
+\begin{lstlisting}[language=bash]
+g++ extractor.cpp -o extractor -lGL -lGLU -lglut
+\end{lstlisting}
+
+Este comando irá gerar um arquivo executável chamado `extractor` no mesmo diretório.
+
+\subsection{Carregando Modelos}
+
+Para carregar um modelo 3D diferente, é necessário modificar o arquivo-fonte `extractor.cpp`. A chamada para o carregamento do modelo está localizada na função `init()`.
+
+\textbf{Exemplo:}
+Para carregar o modelo `teapot.obj`, a linha de código correspondente deve ser:
+\begin{lstlisting}[language=C++]
+loadModel("./.src/teapot.obj");
+\end{lstlisting}
+
+Para carregar o modelo `dragon.obj`, a linha deve ser:
+\begin{lstlisting}[language=C++]
+loadModel("./.src/dragon.obj");
+\end{lstlisting}
+
+Após modificar o arquivo, é necessário recompilar o programa seguindo o passo 1.1 para que as alterações tenham efeito. Os arquivos de modelo (`.obj`) devem estar localizados no diretório `.src/`.
+
+\section{Modelos Utilizados}
+
+Durante o desenvolvimento e depuração do programa, diversos modelos foram testados para garantir a funcionalidade do renderizador. O programa demonstrou sucesso ao carregar, centralizar, escalar e renderizar modelos que seguem o padrão de formato `.obj` e que possuem geometria válida.
+
+Modelos que foram carregados com sucesso incluem:
+\begin{enumerate}
+    \item \textbf{`teapot.obj`} : O modelo clássico de bule de chá (Utah teapot), que foi renderizado corretamente após a implementação da lógica de carregamento e auto-escala.
+    \item \textbf{`[Nome do Modelo 2]`} : (Espaço para descrever outro modelo testado).
+    \item \textbf{`[Nome do Modelo 3]`} : (Espaço para descrever outro modelo testado).
+\end{enumerate}
+
+O modelo `dragon.obj` apresentou problemas de renderização que não foram resolvidos durante os testes. A causa provável está relacionada a dados corrompidos, geometria não-padrão (polígonos complexos, não-convexos) ou outra inconsistência no próprio arquivo de dados, uma vez que o renderizador se mostrou funcional com o modelo `teapot.obj`.
+
+\section{Recursos Adicionais}
+
+Para a correta compilação e execução do programa, os seguintes recursos são necessários:
+\begin{itemize}
+    \item \textbf{Compilador C++:} Um compilador C++ padrão, como o `g++`.
+    \item \textbf{Bibliotecas Gráficas:} As bibliotecas de desenvolvimento para OpenGL e GLUT. Em sistemas baseados em Debian (como Ubuntu), elas podem ser instaladas com o seguinte comando:
+    \begin{lstlisting}[language=bash]
+sudo apt-get install freeglut3-dev
+    \end{lstlisting}
+    Em sistemas baseados em Arch Linux, o comando seria:
+    \begin{lstlisting}[language=bash]
+sudo pacman -S freeglut
+    \end{lstlisting}
+    \item \textbf{Arquivos de Modelo:} Os arquivos de modelo no formato `.obj` que se deseja renderizar. Por convenção do projeto, estes devem ser colocados no diretório `./.src/`.
+\end{itemize}
+
+\section{Informações Adicionais}
+\begin{itemize}
+    \item \textbf{Processo de Depuração:} O desenvolvimento foi iterativo, partindo da correção de uma tela preta inicial. As causas investigadas e corrigidas incluíram: (1) ausência de código de desenho na função `display`, (2) configuração incorreta de matrizes e iluminação na função `init`, e (3) implementação de uma rotina de auto-escala e centralização baseada na Bounding Box do modelo para garantir que o objeto estivesse visível na câmera.
+    \item \textbf{Compatibilidade de Ambiente:} O programa foi testado em um ambiente Arch Linux com o compositor Hyprland (Wayland). A renderização com GLUT funcionou corretamente após as correções no código, indicando que os problemas iniciais não estavam relacionados ao ambiente, mas a erros de implementação e, posteriormente, a dados de modelo específicos.
+    \item \textbf{Limitações e Melhorias Futuras:} O renderizador atual utiliza o modo imediato do OpenGL (`glBegin`/`glEnd`), que é uma abordagem antiga e com baixo desempenho para modelos com alta contagem de polígonos, como o `dragon.obj` (mais de 870.000 faces). Uma futura melhoria seria migrar para o modo retido (moderno) utilizando \textit{Vertex Buffer Objects} (VBOs) para um desempenho de renderização drasticamente superior.
+\end{itemize}
+
+\end{document}
