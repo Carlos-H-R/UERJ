@@ -37,6 +37,7 @@ void mouse(int button, int state, int x, int y);
 void display();
 
 void reader();
+void drawModel();
 
 
 int main(int argc, char** argv) {
@@ -61,16 +62,22 @@ int main(int argc, char** argv) {
 
 
 void display() {
-    // um desenhar um cubo de teste
-    glBegin(GL_POLYGON);
-        glVertex2d(-1.0, -1.0);
-        glVertex2d(1.0, -1.0);
-        glVertex2d(1.0, 1.0);
-        glVertex2d(-1.0, 1.0);
-    glEnd();
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+
+    // Posiciona a camera
+    gluLookAt(0.0, 0.0, 5.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
+
+    // Aplica as rotações
+    glRotatef(rot_y, 1.0, 0.0, 0.0);
+    glRotatef(rot_x, 0.0, 1.0, 0.0);
+
+
+    // Desenha o modelo carregado do arquivo .obj
+    drawModel();
 
     glFlush();
-    glutSwapBuffers();
 }
 
 void init() {
@@ -185,4 +192,45 @@ void reader() {
 
         }
     }
+}
+
+void drawModel() {
+    float centerX = (modelMin.x + modelMax.x) / 2.0f;
+    float centerY = (modelMin.y + modelMax.y) / 2.0f;
+    float centerZ = (modelMin.z + modelMax.z) / 2.0f;
+    
+    float sizeX = modelMax.x - modelMin.x;
+    float sizeY = modelMax.y - modelMin.y;
+    float sizeZ = modelMax.z - modelMin.z;
+    float maxDim = std::max({sizeX, sizeY, sizeZ});
+
+    float scale = 2.0f / maxDim;
+
+    glPushMatrix();
+    glScalef(scale, scale, scale);
+    glTranslatef(-centerX, -centerY, -centerZ);
+
+    for (face:faces) {
+        if (face.vertexIndices.empty()) continue; // Ignora faces vazias
+
+        glBegin(GL_POLYGON); 
+        for (size_t i = 0; i < face.vertexIndices.size(); ++i) {
+            size_t v_idx = face.vertexIndices[i];
+            
+            if (v_idx == 0 || v_idx > vertices.size()) continue; // Ignora índice inválido
+            
+            if (i < face.normalIndices.size() && !normals.empty()) {
+                size_t n_idx = face.normalIndices[i];
+                if (n_idx > 0 && n_idx <= normals.size()) { // Ignora índice inválido
+                    const Vertex& normal = normals[n_idx - 1];
+                    glNormal3f(normal.x, normal.y, normal.z);
+                }
+            }
+            const Vertex& vertex = vertices[v_idx - 1];
+            glVertex3f(vertex.x, vertex.y, vertex.z);
+        }
+        glEnd();
+    }
+    glPopMatrix();
+        
 }
