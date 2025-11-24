@@ -6,6 +6,7 @@
 
 using namespace std;
 
+// Para selecionar qual o arquivo a ser lido eh so descomentar uma das linhas abaixo
 std::ifstream file("./.src/dragon.obj");
 // std::ifstream file("./.src/dragon.obj");
 // std::ifstream file("./.src/dragon.obj");
@@ -18,11 +19,24 @@ int finish_y = 0;
 GLint rot_x = 0;
 GLint rot_y = 0;
 
+struct Vec3 {
+    float x, y, z;
+};
+
+struct Vertex {
+    Vec3 position;
+    Vec3 normal;
+};
+
+std::vector<glm::vec3> vertices;
+std::vector<glm::vec3> faces;
+std::vector<glm::vec3> normal;
+
 void init();
 void mouse(int button, int state, int x, int y);
 void display();
 
-void render();
+void reader();
 
 
 int main(int argc, char** argv) {
@@ -39,7 +53,7 @@ int main(int argc, char** argv) {
 
     // Estado Inicial
     init();
-    
+    reader();
     glutMainLoop();
 
     return 0;
@@ -119,30 +133,56 @@ void mouse(int button, int state, int x, int y) {
         finish_x = x;
         finish_y = y;
 
-
+        rot_x += start_y - finish_y;
+        rot_y += start_x - finish_x;
 
         glutPostRedisplay();
     }
 }
 
-void render() {
+void reader() {
     // le o arquivo obj e extrai o objeto a partir das informações de vetores, faces e normais
     std::string line;
 
     if (file.is_open()) {
-        glBegin(GL_POLYGON);
         while (getline(file, line)) {
-            std::istringstream iss(line); 
+            std::istringstream stream(line); 
+            std::string id;
+            stream >> id;
 
-            char id;
-            float x, y, z;
-            iss >> id >> x >> y >> z; // Extract 'v' and coordinates
-            std::cout << "Vertex: " << x << ", " << y << ", " << z << std::endl;
-            glVertex3f(x, y, z)
+            if (id == "v"){
+                Vec3 vertex;
+                ss >> vertex.x >> vertex.y >> vertex.z;
+                vertices.push_back(vertex);
+            }
+
+            else if (id == "f") {
+                unsigned int vIndex[3], nIndex[3];
+                
+                int matches = fscanf(file, "%d//%d %d//%d %d//%d\n", 
+                                    &vIndex[0], &nIndex[0],
+                                    &vIndex[1], &nIndex[1],
+                                    &vIndex[2], &nIndex[2]);
+
+                if (matches != 6) {
+                    printf("Erro: Formato de face deve ser v//vn\n");
+                }
+
+                for (int i = 0; i < 3; i++) {
+                    Vertex newVertex;
+                    
+                    newVertex.position = temp_vertices[vIndex[i] - 1];
+                    newVertex.normal   = temp_normals[nIndex[i] - 1];
+                    faces.push_back(newVertex);
+                }
+            }
+
+            else if (id == "vn") {
+                Vec3 normal;
+                ss >> normal.x >> normal.y >> normal.z;
+                normals.push_back(normal);
+            }
+
         }
-        glEnd();
-
     }
-
-
 }
