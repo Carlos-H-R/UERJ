@@ -175,13 +175,15 @@ void reader() {
                     printf("Erro: Formato de face deve ser v//vn\n");
                 }
 
-                for (int i = 0; i < 3; i++) {
-                    Vertex newVertex;
-                    
-                    newVertex.position = temp_vertices[vIndex[i] - 1];
-                    newVertex.normal   = temp_normals[nIndex[i] - 1];
-                    faces.push_back(newVertex);
-                }
+                Vertex newVertex;
+                
+                newVertex.position.x = vIndex[0] - 1;
+                newVertex.position.y = vIndex[1] - 1;
+                newVertex.position.z = vIndex[2] - 1;
+                newVertex.normal.x   = nIndex[0] - 1;
+                newVertex.normal.y   = nIndex[1] - 1;
+                newVertex.normal.z   = nIndex[2] - 1;
+                faces.push_back(newVertex);
             }
 
             else if (id == "vn") {
@@ -211,22 +213,20 @@ void drawModel() {
     glTranslatef(-centerX, -centerY, -centerZ);
 
     for (const auto& face : faces) {
-        if (face.vertexIndices.empty()) continue; // Ignora faces vazias
+        if (face.position.empty()) continue; // Ignora faces vazias
 
         glBegin(GL_POLYGON); 
-        for (size_t i = 0; i < face.vertexIndices.size(); ++i) {
-            size_t v_idx = face.vertexIndices[i];
+        for (size_t i = 0; i < face.position.size(); ++i) {
+            size_t v_idx = face.position[i];
             
-            if (v_idx == 0 || v_idx > vertices.size()) continue; // Ignora índice inválido
-            
-            if (i < face.normalIndices.size() && !normals.empty()) {
-                size_t n_idx = face.normalIndices[i];
-                if (n_idx > 0 && n_idx <= normals.size()) { // Ignora índice inválido
-                    const Vertex& normal = normals[n_idx - 1];
-                    glNormal3f(normal.x, normal.y, normal.z);
+            if (i < face.normal.size() && !normal.empty()) {
+                size_t n_idx = face.normal[i];
+                if (n_idx > 0 && n_idx <= normal.size()) { // Ignora índice inválido
+                    const Vertex& nm = normal[n_idx];
+                    glNormal3f(nm.x, nm.y, nm.z);
                 }
             }
-            const Vertex& vertex = vertices[v_idx - 1];
+            const Vertex& vertex = vertices[v_idx];
             glVertex3f(vertex.x, vertex.y, vertex.z);
         }
         glEnd();
